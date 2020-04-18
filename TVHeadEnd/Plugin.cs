@@ -1,71 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
-using TVHeadEnd.Configuration;
-using System.IO;
-using MediaBrowser.Model.Drawing;
-
-namespace TVHeadEnd
+﻿namespace TVHeadEnd
 {
-    /// <summary>
-    /// Class Plugin
-    /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
+    using System;
+    using System.IO;
+
+    using MediaBrowser.Common.Configuration;
+    using MediaBrowser.Common.Plugins;
+    using MediaBrowser.Model.Drawing;
+    using MediaBrowser.Model.Plugins;
+
+    /// <summary>TV Headend Emby Plugin</summary>
+    public class Plugin : IPlugin, IHasThumbImage
     {
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
+        public static readonly Guid PluginId = new Guid("95732bbe-15ed-4293-bab2-e056ccc50159");
+
+        /// <summary>Initializes a new instance of the <see cref="Plugin"/> class.</summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        public Plugin(IApplicationPaths applicationPaths)
         {
-            Instance = this;
+            var assembly = this.GetType().Assembly;
+            var assemblyName = assembly.GetName();
+
+            this.Version = assemblyName.Version;
+            this.AssemblyFilePath = assembly.Location;
+            this.DataFolderPath = Path.Combine(applicationPaths.PluginsPath, assemblyName.Name);
         }
 
-        public IEnumerable<PluginPageInfo> GetPages()
-        {
-            return new[]
-            {
-                new PluginPageInfo
-                {
-                    Name = Name,
-                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
-                }
-            };
-        }
+        /// <summary>Gets the path to the assembly file</summary>
+        /// <value>The assembly file path.</value>
+        public string AssemblyFilePath { get; }
 
-        /// <summary>
-        /// Gets the name of the plugin
-        /// </summary>
-        /// <value>The name.</value>
-        public override string Name
-        {
-            get { return "TVHclient"; }
-        }
+        /// <summary>Gets the full path to the data folder, where the plugin can store any miscellaneous files needed</summary>
+        /// <value>The data folder path.</value>
+        public string DataFolderPath { get; }
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
+        /// <summary>Gets the description.</summary>
         /// <value>The description.</value>
-        public override string Description
-        {
-            get
-            {
-                return "Provides live TV using Tvheadend as a back-end.";
-            }
-        }
+        public string Description => TunerProviderTvHeadend.ProvDescription;
 
-        private Guid _id = new Guid("95732bbe-15ed-4293-bab2-e056ccc50159");
-        public override Guid Id
-        {
-            get { return _id; }
-        }
+        /// <summary>Gets the unique id.</summary>
+        /// <value>The unique id.</value>
+        public Guid Id => PluginId;
 
-        public Stream GetThumbImage()
-        {
-            var type = GetType();
-            return type.Assembly.GetManifestResourceStream(type.Namespace + ".Images.TVHeadEnd.png");
-        }
+        /// <summary>Gets the name of the plugin</summary>
+        /// <value>The name.</value>
+        public string Name => TunerProviderTvHeadend.ProvName;
 
+        /// <summary>Gets the thumb image format.</summary>
+        /// <value>The thumb image format.</value>
         public ImageFormat ThumbImageFormat
         {
             get
@@ -74,11 +55,40 @@ namespace TVHeadEnd
             }
         }
 
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>The instance.</value>
-        public static Plugin Instance { get; private set; }
+        /// <summary>Gets the plugin version</summary>
+        /// <value>The version.</value>
+        public Version Version { get; }
+
+        /// <summary>Gets the plugin info.</summary>
+        /// <returns>Plugin Info.</returns>
+        public PluginInfo GetPluginInfo()
+        {
+            return new PluginInfo
+                       {
+                           Name = TunerProviderTvHeadend.ProvName,
+                           Version = this.Version.ToString(),
+                           Description = TunerProviderTvHeadend.ProvDescription,
+                           Id = TunerProviderTvHeadend.ProvId,
+                       };
+        }
+
+        /// <summary>Gets the thumb image.</summary>
+        /// <returns>An image stream.</returns>
+        public Stream GetThumbImage()
+        {
+            var type = this.GetType();
+            return type.Assembly.GetManifestResourceStream(type.Namespace + ".Images.TVHeadEnd.png");
+        }
+
+        internal static Stream GetThumbImageCore()
+        {
+            var type = typeof(Plugin);
+            return type.Assembly.GetManifestResourceStream(type.Namespace + ".Images.TVHeadEnd.png");
+        }
+
+        /// <summary>Called when just before the plugin is uninstalled from the server.</summary>
+        public virtual void OnUninstalling()
+        {
+        }
     }
-    
 }

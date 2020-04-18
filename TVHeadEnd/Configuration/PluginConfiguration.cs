@@ -8,9 +8,9 @@ namespace TVHeadEnd.Configuration
     /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
-        public string TVH_ServerName { get; set; }
-		public int HTTP_Port { get; set; }
-		public int HTSP_Port { get; set; }
+        public string TvhServerName { get; set; }
+        public int HttpPort { get; set; }
+        public int HtspPort { get; set; }
         public string WebRoot { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
@@ -22,14 +22,14 @@ namespace TVHeadEnd.Configuration
 
         public PluginConfiguration()
         {
-            TVH_ServerName = "localhost";
-            HTTP_Port = 9981;
-			HTSP_Port = 9982;
+            this.TvhServerName = "localhost";
+            this.HttpPort = 9981;
+			this.HtspPort = 9982;
             WebRoot = "/";
-            Username = "";
-            Password = "";
+            Username = string.Empty;
+            Password = string.Empty;
             Priority = 5;
-            Profile = "";
+            Profile = string.Empty;
             ChannelType = "Ignore";
             EnableSubsMaudios = false;
             ForceDeinterlace = false;

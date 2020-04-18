@@ -1,15 +1,18 @@
-﻿using MediaBrowser.Model.Logging;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TVHeadEnd.Helper;
-
-namespace TVHeadEnd.HTSP
+﻿namespace TVHeadEnd.HTSP
 {
-    public class HTSMessage
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text;
+
+    using MediaBrowser.Model.Logging;
+
+    using TVHeadEnd.Helper;
+
+    public class HtsMessage
     {
         public const long HTSP_VERSION = 20;
         private const byte HMF_MAP = 1;
@@ -18,207 +21,211 @@ namespace TVHeadEnd.HTSP
         private const byte HMF_BIN = 4;
         private const byte HMF_LIST = 5;
 
-        private readonly Dictionary<string, object> _dict;
-        private ILogger _logger = null;
-        private byte[] _data = null;
+        private readonly Dictionary<string, object> dict;
+        private ILogger logger;
+        private byte[] data;
 
-        public HTSMessage()
+        public HtsMessage()
         {
-            _dict = new Dictionary<string, object>();
+            this.dict = new Dictionary<string, object>();
         }
 
-        public void putField(string name, object value)
+        public void PutField(string name, object value)
         {
             if (value != null)
             {
-                _dict[name] = value;
-                _data = null;
+                this.dict[name] = value;
+                this.data = null;
             }
         }
 
-        public void removeField(string name)
+        public void RemoveField(string name)
         {
-            _dict.Remove(name);
-            _data = null;
+            this.dict.Remove(name);
+            this.data = null;
         }
 
         public Dictionary<string, object>.Enumerator GetEnumerator()
         {
-            return _dict.GetEnumerator();
+            return this.dict.GetEnumerator();
         }
 
         public string Method
         {
             set
             {
-                _dict["method"] = value;
-                _data = null;
+                this.dict["method"] = value;
+                this.data = null;
             }
             get
             {
-                return getString("method", "");
+                return this.GetString("method", "");
             }
         }
 
-
-        public bool containsField(string name)
+        public bool ContainsField(string name)
         {
-            return _dict.ContainsKey(name);
+            return this.dict.ContainsKey(name);
         }
 
-        public System.Numerics.BigInteger getBigInteger(string name)
+        public BigInteger GetBigInteger(string name)
         {
             try
             {
-                return (System.Numerics.BigInteger)_dict[name];
+                return (BigInteger)this.dict[name];
             }
-            catch(InvalidCastException ice)
+            catch (InvalidCastException ice)
             {
-                _logger.Fatal("[TVHclient] Caught InvalidCastException for field name '" + name + "'. Expected  'System.Numerics.BigInteger' but got '" +
-                    _dict[name].GetType() + "'");
+                this.logger.Fatal(
+                    "[TVHclient] Caught InvalidCastException for field name '" + name + "'. Expected  'System.Numerics.BigInteger' but got '" +
+                    this.dict[name].GetType() + "'");
                 throw ice;
             }
         }
 
-        public long getLong(string name)
+        public long GetLong(string name)
         {
-            return (long)getBigInteger(name);
+            return (long)this.GetBigInteger(name);
         }
 
-        public long getLong(string name, long std)
+        public long GetLong(string name, long std)
         {
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return std;
             }
-            return getLong(name);
+
+            return this.GetLong(name);
         }
 
-        public int getInt(string name)
+        public int GetInt(string name)
         {
-            return (int)getBigInteger(name);
+            return (int)this.GetBigInteger(name);
         }
 
-        public int getInt(string name, int std)
+        public int GetInt(string name, int std)
         {
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return std;
             }
-            return getInt(name);
+
+            return this.GetInt(name);
         }
 
-        public string getString(string name, string std)
+        public string GetString(string name, string std)
         {
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return std;
             }
-            return getString(name);
+
+            return this.GetString(name);
         }
 
-        public string getString(string name)
+        public string GetString(string name)
         {
-            object obj = _dict[name];
+            object obj = this.dict[name];
             if (obj == null)
             {
                 return null;
             }
+
             return obj.ToString();
         }
 
-        public IList<long?> getLongList(string name)
+        public IList<long?> GetLongList(string name)
         {
             List<long?> list = new List<long?>();
 
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return list;
             }
 
-            foreach (object obj in (IList)_dict[name])
+            foreach (object obj in (IList)this.dict[name])
             {
-                if (obj is System.Numerics.BigInteger)
+                if (obj is BigInteger)
                 {
-                    list.Add((long)((System.Numerics.BigInteger)obj));
+                    list.Add((long)(BigInteger)obj);
                 }
             }
 
             return list;
         }
 
-        internal IList<long?> getLongList(string name, IList<long?> std)
+        internal IList<long?> GetLongList(string name, IList<long?> std)
         {
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return std;
             }
 
-            return getLongList(name);
+            return this.GetLongList(name);
         }
 
-        public IList<int?> getIntList(string name)
+        public IList<int?> GetIntList(string name)
         {
             List<int?> list = new List<int?>();
 
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return list;
             }
 
-            foreach (object obj in (IList)_dict[name])
+            foreach (object obj in (IList)this.dict[name])
             {
-                if (obj is System.Numerics.BigInteger)
+                if (obj is BigInteger)
                 {
-                    list.Add((int)((System.Numerics.BigInteger)obj));
+                    list.Add((int)(BigInteger)obj);
                 }
             }
 
             return list;
         }
 
-        internal IList<int?> getIntList(string name, IList<int?> std)
+        internal IList<int?> GetIntList(string name, IList<int?> std)
         {
-            if (!containsField(name))
+            if (!this.ContainsField(name))
             {
                 return std;
             }
 
-            return getIntList(name);
+            return this.GetIntList(name);
         }
 
-        public IList getList(string name)
+        public IList GetList(string name)
         {
-            return (IList)_dict[name];
+            return (IList)this.dict[name];
         }
 
-        public byte[] getByteArray(string name)
+        public byte[] GetByteArray(string name)
         {
-            return (byte[])_dict[name];
+            return (byte[])this.dict[name];
         }
 
         public byte[] BuildBytes()
         {
-            if(_data != null)
+            if (this.data != null)
             {
-                return _data;
+                return this.data;
             }
 
             byte[] buf = new byte[0];
 
             // calc data
-            byte[] data = serializeBinary(_dict);
+            byte[] data = this.SerializeBinary(this.dict);
 
             // calc length
             int len = data.Length;
             byte[] tmpByte = new byte[1];
-            tmpByte[0] = unchecked((byte)((len >> 24) & 0xFF));
+            tmpByte[0] = unchecked((byte)(len >> 24 & 0xFF));
             buf = buf.Concat(tmpByte).ToArray();
-            tmpByte[0] = unchecked((byte)((len >> 16) & 0xFF));
+            tmpByte[0] = unchecked((byte)(len >> 16 & 0xFF));
             buf = buf.Concat(tmpByte).ToArray();
-            tmpByte[0] = unchecked((byte)((len >> 8) & 0xFF));
+            tmpByte[0] = unchecked((byte)(len >> 8 & 0xFF));
             buf = buf.Concat(tmpByte).ToArray();
-            tmpByte[0] = unchecked((byte)((len) & 0xFF));
+            tmpByte[0] = unchecked((byte)(len & 0xFF));
             buf = buf.Concat(tmpByte).ToArray();
 
             // append data
@@ -232,12 +239,12 @@ namespace TVHeadEnd.HTSP
             StringBuilder sb = new StringBuilder();
             sb.Append("\nHTSMessage:\n");
             sb.Append("  <dump>\n");
-            sb.Append(getValueString(_dict, "    "));
+            sb.Append(this.GetValueString(this.dict, "    "));
             sb.Append("  </dump>\n\n");
             return sb.ToString();
         }
 
-        private string getValueString(object value, string pad)
+        private string GetValueString(object value, string pad)
         {
             if (value is byte[])
             {
@@ -249,6 +256,7 @@ namespace TVHeadEnd.HTSP
                     //sb.Append(" (" + Convert.ToString(bVal[ii], 2).PadLeft(8, '0') + ")");
                     sb.Append(", ");
                 }
+
                 return sb.ToString();
             }
             else if (value is IDictionary)
@@ -258,8 +266,9 @@ namespace TVHeadEnd.HTSP
                 foreach (object key in dictVal.Keys)
                 {
                     object currValue = dictVal[key];
-                    sb.Append(pad + key + " : " + getValueString(currValue, pad + "  ") + "\n");
+                    sb.Append(pad + key + " : " + this.GetValueString(currValue, pad + "  ") + "\n");
                 }
+
                 return sb.ToString();
             }
             else if (value is ICollection)
@@ -268,77 +277,80 @@ namespace TVHeadEnd.HTSP
                 ICollection colVal = (ICollection)value;
                 foreach (object tmpObj in colVal)
                 {
-                    sb.Append(getValueString(tmpObj, pad) + ", ");
+                    sb.Append(this.GetValueString(tmpObj, pad) + ", ");
                 }
+
                 return sb.ToString();
             }
+
             return "" + value;
         }
 
-        private byte[] serializeBinary(IDictionary map)
+        private byte[] SerializeBinary(IDictionary map)
         {
             byte[] buf = new byte[0];
             foreach (object key in map.Keys)
             {
                 object value = map[key];
-                byte[] sub = serializeBinary(key.ToString(), value);
+                byte[] sub = this.SerializeBinary(key.ToString(), value);
                 buf = buf.Concat(sub).ToArray();
             }
+
             return buf;
         }
 
-        private byte[] serializeBinary(ICollection list)
+        private byte[] SerializeBinary(ICollection list)
         {
             byte[] buf = new byte[0];
             foreach (object value in list)
             {
-                byte[] sub = serializeBinary("", value);
+                byte[] sub = this.SerializeBinary("", value);
                 buf = buf.Concat(sub).ToArray();
             }
+
             return buf;
         }
 
-
-        private byte[] serializeBinary(string name, object value)
+        private byte[] SerializeBinary(string name, object value)
         {
-            byte[] bName = GetBytes(name);
+            byte[] bName = this.GetBytes(name);
             byte[] bData = new byte[0];
             byte type;
 
             if (value is string)
             {
-                type = HTSMessage.HMF_STR;
-                bData = GetBytes(((string)value));
+                type = HMF_STR;
+                bData = this.GetBytes((string)value);
             }
-            else if (value is System.Numerics.BigInteger)
+            else if (value is BigInteger)
             {
-                type = HTSMessage.HMF_S64;
-                bData = toByteArray((System.Numerics.BigInteger)value);
+                type = HMF_S64;
+                bData = this.ToByteArray((BigInteger)value);
             }
             else if (value is int?)
             {
-                type = HTSMessage.HMF_S64;
-                bData = toByteArray((int)value);
+                type = HMF_S64;
+                bData = this.ToByteArray((int)value);
             }
             else if (value is long?)
             {
-                type = HTSMessage.HMF_S64;
-                bData = toByteArray((long)value);
+                type = HMF_S64;
+                bData = this.ToByteArray((long)value);
             }
             else if (value is byte[])
             {
-                type = HTSMessage.HMF_BIN;
+                type = HMF_BIN;
                 bData = (byte[])value;
             }
             else if (value is IDictionary)
             {
-                type = HTSMessage.HMF_MAP;
-                bData = serializeBinary((IDictionary)value);
+                type = HMF_MAP;
+                bData = this.SerializeBinary((IDictionary)value);
             }
             else if (value is ICollection)
             {
-                type = HTSMessage.HMF_LIST;
-                bData = serializeBinary((ICollection)value);
+                type = HMF_LIST;
+                bData = this.SerializeBinary((ICollection)value);
             }
             else if (value == null)
             {
@@ -352,22 +364,22 @@ namespace TVHeadEnd.HTSP
             byte[] buf = new byte[1 + 1 + 4 + bName.Length + bData.Length];
             buf[0] = type;
             buf[1] = unchecked((byte)(bName.Length & 0xFF));
-            buf[2] = unchecked((byte)((bData.Length >> 24) & 0xFF));
-            buf[3] = unchecked((byte)((bData.Length >> 16) & 0xFF));
-            buf[4] = unchecked((byte)((bData.Length >> 8) & 0xFF));
-            buf[5] = unchecked((byte)((bData.Length) & 0xFF));
+            buf[2] = unchecked((byte)(bData.Length >> 24 & 0xFF));
+            buf[3] = unchecked((byte)(bData.Length >> 16 & 0xFF));
+            buf[4] = unchecked((byte)(bData.Length >> 8 & 0xFF));
+            buf[5] = unchecked((byte)(bData.Length & 0xFF));
 
             Array.Copy(bName, 0, buf, 6, bName.Length);
             Array.Copy(bData, 0, buf, 6 + bName.Length, bData.Length);
-            
+
             return buf;
         }
 
-        private byte[] toByteArray(System.Numerics.BigInteger big)
+        private byte[] ToByteArray(BigInteger big)
         {
             byte[] b = BitConverter.GetBytes((long)big);
             byte[] b1 = new byte[0];
-            Boolean tail = false;
+            bool tail = false;
             for (int ii = 0; ii < b.Length; ii++)
             {
                 if (b[ii] != 0 || !tail)
@@ -376,14 +388,16 @@ namespace TVHeadEnd.HTSP
                     b1 = b1.Concat(new byte[] { b[ii] }).ToArray();
                 }
             }
+
             if (b1.Length == 0)
             {
                 b1 = new byte[1];
             }
+
             return b1;
         }
 
-        public static HTSMessage parse(byte[] data, ILogger logger)
+        public static HtsMessage Parse(byte[] data, ILogger logger)
         {
             if (data.Length < 4)
             {
@@ -391,7 +405,7 @@ namespace TVHeadEnd.HTSP
                 return null;
             }
 
-            long len = uIntToLong(data[0], data[1], data[2], data[3]);
+            long len = UIntToLong(data[0], data[1], data[2], data[3]);
             //Message not fully read
             if (data.Length < len + 4)
             {
@@ -403,15 +417,15 @@ namespace TVHeadEnd.HTSP
             byte[] messageData = new byte[len];
             Array.Copy(data, 4, messageData, 0, len);
 
-            HTSMessage msg = deserializeBinary(messageData);
+            HtsMessage msg = DeserializeBinary(messageData);
 
-            msg._logger = logger;
-            msg._data = data;
+            msg.logger = logger;
+            msg.data = data;
 
             return msg;
         }
 
-        public static long uIntToLong(byte b1, byte b2, byte b3, byte b4)
+        public static long UIntToLong(byte b1, byte b2, byte b3, byte b4)
         {
             long i = 0;
             i <<= 8;
@@ -425,31 +439,32 @@ namespace TVHeadEnd.HTSP
             return i;
         }
 
-        private static System.Numerics.BigInteger toBigInteger(byte[] b)
+        private static BigInteger ToBigInteger(byte[] b)
         {
             byte[] b1 = new byte[8];
             for (int ii = 0; ii < b.Length; ii++)
             {
                 b1[ii] = b[ii];
             }
+
             long lValue = BitConverter.ToInt64(b1, 0);
-            return new System.Numerics.BigInteger(lValue);
+            return new BigInteger(lValue);
         }
 
-        private static HTSMessage deserializeBinary(byte[] messageData)
+        private static HtsMessage DeserializeBinary(byte[] messageData)
         {
             byte type, namelen;
             long datalen;
 
-            HTSMessage msg = new HTSMessage();
+            HtsMessage msg = new HtsMessage();
             int cnt = 0;
 
             ByteBuffer buf = new ByteBuffer(messageData);
-            while (buf.hasRemaining())
+            while (buf.HasRemaining())
             {
-                type = buf.get();
-                namelen = buf.get();
-                datalen = uIntToLong(buf.get(), buf.get(), buf.get(), buf.get());
+                type = buf.Get();
+                namelen = buf.Get();
+                datalen = UIntToLong(buf.Get(), buf.Get(), buf.Get(), buf.Get());
 
                 if (buf.Length() < namelen + datalen)
                 {
@@ -465,18 +480,18 @@ namespace TVHeadEnd.HTSP
                 else
                 {
                     byte[] bName = new byte[namelen];
-                    buf.get(bName);
+                    buf.Get(bName);
                     name = NewString(bName);
                 }
 
                 //Get the actual content
                 object obj = null;
                 byte[] bData = new byte[datalen];
-                buf.get(bData);
+                buf.Get(bData);
 
                 switch (type)
                 {
-                    case HTSMessage.HMF_STR:
+                    case HMF_STR:
                         {
                             obj = NewString(bData);
                             break;
@@ -488,36 +503,37 @@ namespace TVHeadEnd.HTSP
                         }
                     case HMF_S64:
                         {
-                            obj = toBigInteger(bData);
+                            obj = ToBigInteger(bData);
                             break;
                         }
                     case HMF_MAP:
                         {
-                            obj = deserializeBinary(bData);
+                            obj = DeserializeBinary(bData);
                             break;
                         }
                     case HMF_LIST:
                         {
-                            obj = new List<object>(deserializeBinary(bData)._dict.Values);
+                            obj = new List<object>(DeserializeBinary(bData).dict.Values);
                             break;
                         }
                     default:
                         throw new IOException("Unknown data type");
                 }
-                msg.putField(name, obj);
+
+                msg.PutField(name, obj);
             }
+
             return msg;
         }
 
-
         private static string NewString(byte[] bytes)
         {
-            return System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
         }
 
         private byte[] GetBytes(string s)
         {
-            System.Text.Encoding encoding = System.Text.Encoding.UTF8;
+            Encoding encoding = Encoding.UTF8;
             byte[] bytes = new byte[encoding.GetByteCount(s)];
             encoding.GetBytes(s, 0, s.Length, bytes, 0);
             return bytes;
