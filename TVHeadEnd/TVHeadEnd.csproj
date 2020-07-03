@@ -1,10 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Emby.Server.NetCore\src\common.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="_org\DataHelper\DvrDataHelper.cs" />
+    <Compile Remove="_org\DataHelper\TunerDataHelper.cs" />
+    <Compile Remove="_org\HTSP\Responses\GetEventsResponseHandler.cs" />
+    <Compile Remove="_org\LiveTvService.cs" />
+    <Compile Remove="_org\RecordingsChannel.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
@@ -24,10 +32,6 @@
     <ProjectReference Include="..\..\Emby.Server.NetCore\src\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\..\Emby.Server.NetCore\src\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\..\Emby.Server.NetCore\src\TV\Emby.TV.Model\Emby.TV.Model.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\" />
   </ItemGroup>
 
 </Project>

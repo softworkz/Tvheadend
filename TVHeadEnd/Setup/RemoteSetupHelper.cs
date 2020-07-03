@@ -50,10 +50,10 @@
 
                 if (averageMs < 10.0)
                 {
-                    return new CheckResult(true, string.Format("OK: Average ping is {0:n2} ms", averageMs));
+                    return new CheckResult(true, string.Format("OK: Average ping is {0:n1} ms", averageMs));
                 }
 
-                return new CheckResult(false, string.Format("Failed: Average ping time (8192 bytes payload) is {0:n2} ms", averageMs));
+                return new CheckResult(false, string.Format("Failed: Average ping time (8192 bytes payload) is {0:n1} ms", averageMs));
             }
             catch (Exception ex)
             {

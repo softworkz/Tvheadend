@@ -2,8 +2,8 @@
 {
     using System.Threading.Tasks;
 
+    using Emby.TV.Model.Providers.Tuners.Interfaces;
     using Emby.TV.Model.Setup;
-    using Emby.TV.Model.Setup.Interfaces;
 
     using MediaBrowser.Common.Net;
     using MediaBrowser.Model.Globalization;
@@ -13,6 +13,7 @@
     using MediaBrowser.Model.System;
 
     using TVHeadEnd.Configuration;
+    using TVHeadEnd.HTSP;
     using TVHeadEnd.Setup.UiData;
 
     public class TvHeadendSetupManager
@@ -52,11 +53,11 @@
 
         public TvHeadendTunerConfig TunerConfig { get; }
 
-        internal Task<ISetupStage> GetNextStage(
-            WizardSetupStageBase setupStage,
-            ILocalizationManager localizationManager,
-            ISetupStage originalpreviousSetupStage,
-            ISetupStage previousSetupStage)
+        public HtsServerInfo ServerInfo { get; set; }
+
+        internal Task<IProviderSetupStage> GetNextStage(
+            ProviderStageWizardBase setupStage,
+            ILocalizationManager localizationManager)
         {
             ////if (setupStage is SetupStageAddSimulatedTuner addSimulatedTunerStage)
             ////{

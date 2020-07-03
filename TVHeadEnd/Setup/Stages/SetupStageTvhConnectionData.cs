@@ -3,20 +3,19 @@
     using System;
     using System.Threading.Tasks;
 
+    using Emby.TV.Model.Providers.Tuners.Interfaces;
     using Emby.TV.Model.Setup;
-    using Emby.TV.Model.Setup.Enums;
-    using Emby.TV.Model.Setup.Interfaces;
 
-    using MediaBrowser.Model.GenericEdit;
     using MediaBrowser.Model.Globalization;
     using MediaBrowser.Model.Logging;
 
     using TVHeadEnd.Setup.UiData;
 
-    public class SetupStageTvhConnectionData : WizardSetupStageBase
+    public class SetupStageTvhConnectionData : ProviderStageWizardBase
     {
         private readonly TunerProviderTvHeadend tunerProvider;
         private readonly ITunerSetupManager tunerSetupManager;
+        private readonly ILocalizationManager localizationManager;
         private readonly TvHeadendSetupManager setupManager;
 
         public SetupStageTvhConnectionData(
@@ -24,23 +23,17 @@
             ILogger logger,
             ITunerSetupManager tunerSetupManager,
             ILocalizationManager localizationManager,
-            TvHeadendSetupManager setupManager,
-            ISetupStage previouSetupStage)
-            : base(SetupArea.Tuners, tunerProvider.ProviderId, logger, localizationManager, previouSetupStage, null)
+            TvHeadendSetupManager setupManager)
+            : base(tunerProvider.ProviderId, logger)
         {
             this.tunerProvider = tunerProvider;
             this.tunerSetupManager = tunerSetupManager;
+            this.localizationManager = localizationManager;
             this.setupManager = setupManager;
             this.Caption = localizationManager.GetLocalizedString("TV Headend");
             this.SubCaption = null;
             this.ContentData = TvHeadendSetupManager.ConvertToConnectionDataUi(setupManager.TunerConfig);
         }
-
-        public override string Caption { get; }
-
-        public override string SubCaption { get; }
-
-        public override sealed IEditableObject ContentData { get; set; }
 
         protected TvhConnectionDataUi ConnectionData => this.ContentData as TvhConnectionDataUi;
 
@@ -49,7 +42,7 @@
             return Task.CompletedTask;
         }
 
-        public override Task<ISetupStage> OnNextCommand(string providerId, string commandId, string data)
+        public override Task<IProviderSetupStage> OnNextCommand(string providerId, string commandId, string data)
         {
             if (string.IsNullOrWhiteSpace(this.ConnectionData.UserName))
             {
@@ -63,8 +56,8 @@
 
             TvHeadendSetupManager.ApplyToConfig(this.setupManager.TunerConfig, this.ConnectionData);
 
-            var nextStage = new SetupStageTvhConnectionCheck(this.tunerProvider, this.tunerSetupManager, this.Logger, this.LocalizationManager, this.setupManager, this.OriginalSetupStage, this);
-            return Task.FromResult<ISetupStage>(nextStage);
+            var nextStage = new SetupStageTvhConnectionCheck(this.tunerProvider, this.tunerSetupManager, this.Logger, this.localizationManager, this.setupManager);
+            return Task.FromResult<IProviderSetupStage>(nextStage);
         }
     }
 }

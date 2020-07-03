@@ -6,32 +6,37 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using MediaBrowser.Controller.LiveTv;
+    using Emby.TV.Model.Common.Enums;
+
     using MediaBrowser.Model.LiveTv;
     using MediaBrowser.Model.Logging;
 
     using TVHeadEnd.HTSP;
+    using TVHeadEnd.Model;
 
     public class ChannelDataHelper
     {
         private readonly ILogger logger;
-        private readonly TunerDataHelper tunerDataHelper;
+        ////private readonly TunerDataHelper tunerDataHelper;
         private readonly Dictionary<int, HtsMessage> data;
         private readonly Dictionary<string, string> piconData;
         private string channelType4Other = "Ignore";
 
-        public ChannelDataHelper(ILogger logger, TunerDataHelper tunerDataHelper)
+        ////public ChannelDataHelper(ILogger logger, TunerDataHelper tunerDataHelper)
+        ////{
+        ////    this.logger = logger;
+        ////    this.tunerDataHelper = tunerDataHelper;
+
+        ////    this.data = new Dictionary<int, HtsMessage>();
+        ////    this.piconData = new Dictionary<string, string>();
+        ////}
+
+        public ChannelDataHelper(ILogger logger)
         {
             this.logger = logger;
-            this.tunerDataHelper = tunerDataHelper;
 
             this.data = new Dictionary<int, HtsMessage>();
             this.piconData = new Dictionary<string, string>();
-        }
-
-        public ChannelDataHelper(ILogger logger)
-            : this(logger, null)
-        {
         }
 
         public void SetChannelType4Other(string channelType4Other)
@@ -44,20 +49,20 @@
             lock (this.data)
             {
                 this.data.Clear();
-                if (this.tunerDataHelper != null)
-                {
-                    this.tunerDataHelper.Clean();
-                }
+                ////if (this.tunerDataHelper != null)
+                ////{
+                ////    this.tunerDataHelper.Clean();
+                ////}
             }
         }
 
         public void Add(HtsMessage message)
         {
-            if (this.tunerDataHelper != null)
-            {
-                // TVHeadend don't send the information we need 
-                // _tunerDataHelper.addTunerInfo(message);
-            }
+            ////if (this.tunerDataHelper != null)
+            ////{
+            ////    // TVHeadend don't send the information we need 
+            ////    // _tunerDataHelper.addTunerInfo(message);
+            ////}
 
             lock (this.data)
             {
@@ -108,7 +113,7 @@
                 return result;
             }
 
-            return result;
+            return null;
         }
 
         public Task<IEnumerable<ChannelInfo>> BuildChannelInfos(CancellationToken cancellationToken)
@@ -132,7 +137,7 @@
                                 try
                                 {
                                     ChannelInfo ci = new ChannelInfo();
-                                    ci.Id = string.Empty + entry.Key;
+                                    ci.Id = entry.Key;
 
                                     ci.ImagePath = string.Empty;
 
@@ -148,9 +153,9 @@
                                         else
                                         {
                                             ci.HasImage = true;
-                                            if (!this.piconData.ContainsKey(ci.Id))
+                                            if (!this.piconData.ContainsKey(ci.Id.ToString()))
                                             {
-                                                this.piconData.Add(ci.Id, channelIcon);
+                                                this.piconData.Add(ci.Id.ToString(), channelIcon);
                                             }
                                         }
                                     }
@@ -168,12 +173,11 @@
 
                                     if (m.ContainsField("channelNumber"))
                                     {
-                                        int channelNumber = m.GetInt("channelNumber");
-                                        ci.Number = string.Empty + channelNumber;
+                                        ci.ChannelNumber = m.GetInt("channelNumber");
+
                                         if (m.ContainsField("channelNumberMinor"))
                                         {
-                                            int channelNumberMinor = m.GetInt("channelNumberMinor");
-                                            ci.Number = ci.Number + "." + channelNumberMinor;
+                                            ci.ChannelNumberMinor = m.GetInt("channelNumberMinor");
                                         }
                                     }
 
@@ -184,19 +188,24 @@
                                         if (tunerInfoList != null && tunerInfoList.Count > 0)
                                         {
                                             HtsMessage firstServiceInList = (HtsMessage)tunerInfoList[0];
+                                            if (firstServiceInList.ContainsField("name"))
+                                            {
+                                                ci.ServiceName = firstServiceInList.GetString("name");
+                                            }
+
                                             if (firstServiceInList.ContainsField("type"))
                                             {
                                                 string type = firstServiceInList.GetString("type").ToLower();
                                                 switch (type)
                                                 {
                                                     case "radio":
-                                                        ci.ChannelType = ChannelType.Radio;
+                                                        ci.ChannelType = TvChannelType.Radio;
                                                         serviceFound = true;
                                                         break;
                                                     case "sdtv":
                                                     case "hdtv":
                                                     case "uhdtv":
-                                                        ci.ChannelType = ChannelType.TV;
+                                                        ci.ChannelType = TvChannelType.TV;
                                                         serviceFound = true;
                                                         break;
                                                     case "other":
@@ -204,12 +213,12 @@
                                                         {
                                                             case "tv":
                                                                 this.logger.Info("[TVHclient] ChannelDataHelper: map service tag 'Other' to 'TV'.");
-                                                                ci.ChannelType = ChannelType.TV;
+                                                                ci.ChannelType = TvChannelType.TV;
                                                                 serviceFound = true;
                                                                 break;
                                                             case "radio":
                                                                 this.logger.Info("[TVHclient] ChannelDataHelper: map service tag 'Other' to 'Radio'.");
-                                                                ci.ChannelType = ChannelType.Radio;
+                                                                ci.ChannelType = TvChannelType.Radio;
                                                                 serviceFound = true;
                                                                 break;
                                                             default:

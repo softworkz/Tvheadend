@@ -1,6 +1,6 @@
 ﻿namespace TVHeadEnd.Configuration
 {
-    using Emby.TV.Model.Configuration;
+    using Emby.TV.Model.Providers.Config;
 
     using MediaBrowser.Model.Attributes;
 
@@ -32,7 +32,7 @@
             this.EnableSubsMaudios = false;
             this.ForceDeinterlace = false;
 
-            // Test
+            // TODO: REMOVE!!!
             this.TvhServerName = "192.168.25.200";
             this.Username = "somebody";
             this.Password = "somesome";

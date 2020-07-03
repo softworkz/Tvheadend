@@ -102,7 +102,7 @@
 
             var list = new List<TimeSpan>();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 10; i++)
             {
                 var reply = await pinger.SendPingAsync(hostname, Timeout, buffer, options).ConfigureAwait(false);
                 if (reply.Status == IPStatus.Success)

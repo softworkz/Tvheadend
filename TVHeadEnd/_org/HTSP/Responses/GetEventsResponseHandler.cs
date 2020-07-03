@@ -7,7 +7,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using MediaBrowser.Controller.LiveTv;
     using MediaBrowser.Model.Logging;
 
     public class GetEventsResponseHandler : IHtsResponseHandler

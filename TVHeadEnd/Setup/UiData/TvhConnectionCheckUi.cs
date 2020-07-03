@@ -1,10 +1,22 @@
 ﻿namespace TVHeadEnd.Setup.UiData
 {
-    using Emby.GenericEdit;
-    using Emby.GenericEdit.Compound;
+    using System.ComponentModel;
+
+    using Emby.Web.GenericEdit;
+    using Emby.Web.GenericEdit.Elements;
+
+    using MediaBrowser.Model.Attributes;
+
+    using TVHeadEnd.Setup.Stages;
 
     public class TvhConnectionCheckUi : EditableObjectBase
     {
+        public TvhConnectionCheckUi(string providerId)
+            : this()
+        {
+            this.ProviderId = providerId;
+        }
+
         public TvhConnectionCheckUi()
         {
             this.StatusCheckNetworkLocation = new StatusItem("Check Network Location", null);
@@ -13,6 +25,9 @@
             this.StatusCheckAuthenticate = new StatusItem("Authenticate", null);
             this.StatusDownloadChannels = new StatusItem("Channel Download", null);
         }
+
+        [Browsable(false)]
+        public string ProviderId { get; set; }
 
         /// <summary>Gets the editor title.</summary>
         /// <value>The editor title.</value>
@@ -31,5 +46,21 @@
         public StatusItem StatusCheckAuthenticate { get; set; }
 
         public StatusItem StatusDownloadChannels { get; set; }
+
+        [VisibleCondition("StatusDownloadChannels.Status", ValueCondition.IsEqual, ItemStatus.Succeeded)]
+        public ButtonItem ShowTunerChannels
+        {
+            get
+            {
+                return new ButtonItem("Show Scan Results")
+                           {
+                               Data1 = SetupStageTvhConnectionCheck.ShowScanResult,
+                               Data2 = this.ProviderId,
+                               Icon = IconNames.view_list,
+                           };
+            }
+        }
+
+
     }
 }

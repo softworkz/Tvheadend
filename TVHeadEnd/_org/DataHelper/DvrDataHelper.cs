@@ -5,7 +5,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using MediaBrowser.Controller.LiveTv;
     using MediaBrowser.Model.LiveTv;
     using MediaBrowser.Model.Logging;
 
@@ -310,176 +309,176 @@
                     });
         }
 
-        public Task<IEnumerable<TimerInfo>> BuildPendingTimersInfos(CancellationToken cancellationToken)
-        {
-            return Task.Factory.StartNew<IEnumerable<TimerInfo>>(
-                () =>
-                    {
-                        lock (this.data)
-                        {
-                            List<TimerInfo> result = new List<TimerInfo>();
-                            foreach (KeyValuePair<string, HtsMessage> entry in this.data)
-                            {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    this.logger.Info("[TVHclient] DvrDataHelper.buildDvrInfos, call canceled - returning part list.");
-                                    return result;
-                                }
+        ////public Task<IEnumerable<TimerInfo>> BuildPendingTimersInfos(CancellationToken cancellationToken)
+        ////{
+        ////    return Task.Factory.StartNew<IEnumerable<TimerInfo>>(
+        ////        () =>
+        ////            {
+        ////                lock (this.data)
+        ////                {
+        ////                    List<TimerInfo> result = new List<TimerInfo>();
+        ////                    foreach (KeyValuePair<string, HtsMessage> entry in this.data)
+        ////                    {
+        ////                        if (cancellationToken.IsCancellationRequested)
+        ////                        {
+        ////                            this.logger.Info("[TVHclient] DvrDataHelper.buildDvrInfos, call canceled - returning part list.");
+        ////                            return result;
+        ////                        }
 
-                                HtsMessage m = entry.Value;
-                                TimerInfo ti = new TimerInfo();
+        ////                        HtsMessage m = entry.Value;
+        ////                        TimerInfo ti = new TimerInfo();
 
-                                try
-                                {
-                                    if (m.ContainsField("id"))
-                                    {
-                                        ti.Id = string.Empty + m.GetInt("id");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("id"))
+        ////                            {
+        ////                                ti.Id = string.Empty + m.GetInt("id");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("channel"))
-                                    {
-                                        ti.ChannelId = string.Empty + m.GetInt("channel");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("channel"))
+        ////                            {
+        ////                                ti.ChannelId = string.Empty + m.GetInt("channel");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("start"))
-                                    {
-                                        long unixUtc = m.GetLong("start");
-                                        ti.StartDate = this.initialDateTimeUtc.AddSeconds(unixUtc).ToUniversalTime();
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("start"))
+        ////                            {
+        ////                                long unixUtc = m.GetLong("start");
+        ////                                ti.StartDate = this.initialDateTimeUtc.AddSeconds(unixUtc).ToUniversalTime();
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("stop"))
-                                    {
-                                        long unixUtc = m.GetLong("stop");
-                                        ti.EndDate = this.initialDateTimeUtc.AddSeconds(unixUtc).ToUniversalTime();
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("stop"))
+        ////                            {
+        ////                                long unixUtc = m.GetLong("stop");
+        ////                                ti.EndDate = this.initialDateTimeUtc.AddSeconds(unixUtc).ToUniversalTime();
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("title"))
-                                    {
-                                        ti.Name = m.GetString("title");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("title"))
+        ////                            {
+        ////                                ti.Name = m.GetString("title");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("description"))
-                                    {
-                                        ti.Overview = m.GetString("description");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("description"))
+        ////                            {
+        ////                                ti.Overview = m.GetString("description");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("state"))
-                                    {
-                                        string state = m.GetString("state");
-                                        switch (state)
-                                        {
-                                            case "scheduled":
-                                                ti.Status = RecordingStatus.New;
-                                                break;
-                                            default:
-                                                // only scheduled timers need to be delivered
-                                                continue;
-                                        }
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("state"))
+        ////                            {
+        ////                                string state = m.GetString("state");
+        ////                                switch (state)
+        ////                                {
+        ////                                    case "scheduled":
+        ////                                        ti.Status = RecordingStatus.New;
+        ////                                        break;
+        ////                                    default:
+        ////                                        // only scheduled timers need to be delivered
+        ////                                        continue;
+        ////                                }
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("startExtra"))
-                                    {
-                                        ti.PrePaddingSeconds = (int)m.GetLong("startExtra") * 60;
-                                        ti.IsPrePaddingRequired = true;
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("startExtra"))
+        ////                            {
+        ////                                ti.PrePaddingSeconds = (int)m.GetLong("startExtra") * 60;
+        ////                                ti.IsPrePaddingRequired = true;
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("stopExtra"))
-                                    {
-                                        ti.PostPaddingSeconds = (int)m.GetLong("stopExtra") * 60;
-                                        ti.IsPostPaddingRequired = true;
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("stopExtra"))
+        ////                            {
+        ////                                ti.PostPaddingSeconds = (int)m.GetLong("stopExtra") * 60;
+        ////                                ti.IsPostPaddingRequired = true;
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("priority"))
-                                    {
-                                        ti.Priority = m.GetInt("priority");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("priority"))
+        ////                            {
+        ////                                ti.Priority = m.GetInt("priority");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("autorecId"))
-                                    {
-                                        ti.SeriesTimerId = m.GetString("autorecId");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("autorecId"))
+        ////                            {
+        ////                                ti.SeriesTimerId = m.GetString("autorecId");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                try
-                                {
-                                    if (m.ContainsField("eventId"))
-                                    {
-                                        ti.ProgramId = string.Empty + m.GetInt("eventId");
-                                    }
-                                }
-                                catch (InvalidCastException)
-                                {
-                                }
+        ////                        try
+        ////                        {
+        ////                            if (m.ContainsField("eventId"))
+        ////                            {
+        ////                                ti.ProgramId = string.Empty + m.GetInt("eventId");
+        ////                            }
+        ////                        }
+        ////                        catch (InvalidCastException)
+        ////                        {
+        ////                        }
 
-                                result.Add(ti);
-                            }
+        ////                        result.Add(ti);
+        ////                    }
 
-                            return result;
-                        }
-                    });
-        }
+        ////                    return result;
+        ////                }
+        ////            });
+        ////}
     }
 }

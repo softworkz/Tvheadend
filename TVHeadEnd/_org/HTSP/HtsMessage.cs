@@ -79,7 +79,7 @@
                 this.logger.Fatal(
                     "[TVHclient] Caught InvalidCastException for field name '" + name + "'. Expected  'System.Numerics.BigInteger' but got '" +
                     this.dict[name].GetType() + "'");
-                throw ice;
+                throw;
             }
         }
 
@@ -269,6 +269,7 @@
                     sb.Append(pad + key + " : " + this.GetValueString(currValue, pad + "  ") + "\n");
                 }
 
+                var x = sb.ToString();
                 return sb.ToString();
             }
             else if (value is ICollection)
